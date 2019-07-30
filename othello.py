@@ -8,8 +8,10 @@ SPACE = 0
 BLACK = 1
 WHITE = -1
 
+CELL_LENGTH = 50
 BOARD_PX_SIZE = 500
-CELL_PX_SIZE = BOARD_PX_SIZE / 8
+CELL_PX_SIZE = BOARD_PX_SIZE / CELL_LENGTH
+PADDING = 4 if CELL_PX_SIZE>20 else 1
 
 class Position:
     def __init__(self, y=0, x=0):
@@ -17,7 +19,7 @@ class Position:
         self.x = x
 
     def is_inner(self, y, x):
-        if y >= 0 and x >= 0 and y < 8 and x < 8:
+        if y >= 0 and x >= 0 and y < CELL_LENGTH and x < CELL_LENGTH:
             return True
         else:
             return False
@@ -28,18 +30,18 @@ class Board:
             [0, -1],            [0, 1],
             [1, -1],  [1, 0],   [1, 1]]
     def __init__(self):
-        self.board = [[SPACE for i in range(8)] for j in range(8)]
+        self.board = [[SPACE for i in range(CELL_LENGTH)] for j in range(CELL_LENGTH)]
         self.turn = BLACK
         self.move_num = 1
 
     def init_board(self):
-        for y in range(8):
-            for x in range(8):
+        for y in range(CELL_LENGTH):
+            for x in range(CELL_LENGTH):
                 self.board[y][x] = SPACE
-        self.board[3][3] = WHITE
-        self.board[3][4] = BLACK
-        self.board[4][3] = BLACK
-        self.board[4][4] = WHITE
+        self.board[int(CELL_LENGTH/2 - 1)][int(CELL_LENGTH/2 -1)] = WHITE
+        self.board[int(CELL_LENGTH/2 - 1)][int(CELL_LENGTH/2)] = BLACK
+        self.board[int(CELL_LENGTH/2)][int(CELL_LENGTH/2 - 1)] = BLACK
+        self.board[int(CELL_LENGTH/2)][int(CELL_LENGTH/2)] = WHITE
 
         self.turn = BLACK
         self.move_num = 1
@@ -47,8 +49,8 @@ class Board:
     def get_discs(self):
         black_discs = 0
         white_discs = 0
-        for y in range(8):
-            for x in range(8):
+        for y in range(CELL_LENGTH):
+            for x in range(CELL_LENGTH):
                 disc = self.board[y][x]
                 if disc == BLACK:
                     black_discs += 1
@@ -78,8 +80,8 @@ class Board:
 
     def get_move_list(self):
         move_list = []
-        for y in range(8):
-            for x in range(8):
+        for y in range(CELL_LENGTH):
+            for x in range(CELL_LENGTH):
                 if self.board[y][x] == SPACE:
                     position = Position(y,x)
                     if self.is_movable(position):
@@ -117,7 +119,7 @@ class Board:
         self.turn = -self.turn
 
     def is_game_end(self):
-        if self.move_num == 61:
+        if self.move_num == CELL_LENGTH * CELL_LENGTH -3:
             return True
         (black_disks, white_disks) = self.get_discs()
         if black_disks == 0 or white_disks == 0:
@@ -157,13 +159,13 @@ class Game:
         if self.board.is_game_end():
             self.game_mode = 2
             disp_mess()
-            messagebox.showinfo(u"", u"対局終了")
+            #messagebox.showinfo(u"", u"対局終了")
             return
 
         move_list = self.board.get_move_list()
         if len(move_list) == 0:
             self.board.move_pass()
-            messagebox.showinfo(u"パス", u"打てる場所がないのでパスします")
+            #messagebox.showinfo(u"パス", u"打てる場所がないのでパスします")
         disp_mess()
 
     #次の手番がPCならtrueを返す
@@ -197,19 +199,19 @@ def draw_board():
     #背景
     canvas_board.create_rectangle(0, 0, BOARD_PX_SIZE, BOARD_PX_SIZE, fill = '#00a000')
     #石
-    for y in range(8):
-        for x in range(8):
+    for y in range(CELL_LENGTH):
+        for x in range(CELL_LENGTH):
             disc = game.board.board[y][x]
             if disc != SPACE:
                 if disc == BLACK:
                     color = "black"
                 else:
                     color = "white"
-                canvas_board.create_oval(x*CELL_PX_SIZE+4, y*CELL_PX_SIZE+4, (x+1)*CELL_PX_SIZE-4, (y+1)*CELL_PX_SIZE-4, fill=color)
+                canvas_board.create_oval(x*CELL_PX_SIZE+PADDING, y*CELL_PX_SIZE+PADDING, (x+1)*CELL_PX_SIZE-PADDING, (y+1)*CELL_PX_SIZE-PADDING, fill=color)
     #枠
-    for x in range(8):
+    for x in range(CELL_LENGTH):
         canvas_board.create_line(x*CELL_PX_SIZE, 0, x*CELL_PX_SIZE, BOARD_PX_SIZE, fill="black", width=1)
-    for y in range(8):
+    for y in range(CELL_LENGTH):
         canvas_board.create_line(0, y*CELL_PX_SIZE, BOARD_PX_SIZE, y*CELL_PX_SIZE, fill="black", width=1)
     
     canvas_board.update()
